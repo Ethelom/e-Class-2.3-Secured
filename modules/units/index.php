@@ -54,6 +54,9 @@ function confirmation () {
 }
 </script>';
 
+if(isset($_SESSION['token'])) {
+    $CSRFToken = $_SESSION['token'];
+}
 
 // Process resource actions
 if (isset($_REQUEST['edit'])) {
@@ -84,11 +87,15 @@ _editor_lang = '$lang_editor';
 	}
 	$tool_content .= "<p class='success_small'>$langResourceUnitModified</p>";
 } elseif(isset($_REQUEST['del'])) { // delete resource from course unit
-	$res_id = intval($_GET['del']);
-	if ($id = check_admin_unit_resource($res_id)) {
-		db_query("DELETE FROM unit_resources WHERE id = '$res_id'", $mysqlMainDb);
-		$tool_content .= "<p class='success_small'>$langResourceCourseUnitDeleted</p>";
-	}
+    if(isset($CSRFToken)) {
+        if ($_SESSION['token'] == $CSRFToken) {
+            $res_id = intval($_GET['del']);
+            if ($id = check_admin_unit_resource($res_id)) {
+                db_query("DELETE FROM unit_resources WHERE id = '$res_id'", $mysqlMainDb);
+                $tool_content .= "<p class='success_small'>$langResourceCourseUnitDeleted</p>";
+            }
+        }
+    }
 } elseif (isset($_REQUEST['vis'])) { // modify visibility in text resources only 
 	$res_id = intval($_REQUEST['vis']);
 	if ($id = check_admin_unit_resource($res_id)) {
@@ -555,7 +562,7 @@ function show_wiki($title, $comments, $resource_id, $wiki_id, $visibility)
 }
 
 // resource actions
-function actions($res_type, $resource_id, $status)
+function actions($res_type, $resource_id, $status, $CSRFToken)
 {
         global $is_adminOfCourse, $langEdit, $langDelete, $langVisibility, $langDown, $langUp, $mysqlMainDb;
 
@@ -573,7 +580,7 @@ function actions($res_type, $resource_id, $status)
         } else {
                 $content = '<td width="3%">&nbsp;</td>';
         }
-        $content .= "<td width='3%'><a href='$_SERVER[PHP_SELF]?del=$resource_id'" .
+        $content .= "<td width='3%'><a href='$_SERVER[PHP_SELF]?del=$resource_id&CSRFToken=$CSRFToken'" .
                                         " onClick=\"return confirmation();\">" .
                                         "<img src='../../template/classic/img/delete.gif' " .
                                         "title='$langDelete'></img></a></td>";
