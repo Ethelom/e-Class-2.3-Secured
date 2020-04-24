@@ -1,4 +1,7 @@
 <?php session_start();
+if (!isset($_SESSION['token'])) {
+    $_SESSION['token'] = md5(uniqid(rand(), true));
+}
 /*========================================================================
 *   Open eClass 2.3
 *   E-learning and Course Management System
