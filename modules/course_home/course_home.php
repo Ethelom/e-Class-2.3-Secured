@@ -122,10 +122,12 @@ if ($is_adminOfCourse) {
 		        $main_content .= "\n        <p class='success_small'>$langCourseUnitAdded</p>";
                 }
         } elseif (isset($_REQUEST['del'])) { // delete course unit
-		$id = intval($_REQUEST['del']);
-		db_query("DELETE FROM course_units WHERE id = '$id'");
-		db_query("DELETE FROM unit_resources WHERE unit_id = '$id'");
-		$main_content .= "<p class='success_small'>$langCourseUnitDeleted</p>";
+            if(isset($CSRFToken) and $CSRFToken == $_SESSION['token']) {
+                $id = intval($_REQUEST['del']);
+                db_query("DELETE FROM course_units WHERE id = '$id'");
+                db_query("DELETE FROM unit_resources WHERE unit_id = '$id'");
+                $main_content .= "<p class='success_small'>$langCourseUnitDeleted</p>";
+            }
 	} elseif (isset($_REQUEST['vis'])) { // modify visibility
 		$id = intval($_REQUEST['vis']);
 		$sql = db_query("SELECT `visibility` FROM course_units WHERE id='$id'");
@@ -188,10 +190,13 @@ while ($cu = mysql_fetch_array($sql)) {
                 $cu_title = htmlspecialchars($cu[title], ENT_QUOTES, 'UTF-8');
                 $cunits_content .= "\n        <td width='85%'><a class=\"unit_link$class_vis\" href='${urlServer}modules/units/?id=$cu[id]'>$cu_title</a></td>";
                 if ($is_adminOfCourse) { // display actions
+                    if(isset($_SESSION['token'])) {
+                        $CSRFToken = $_SESSION['token'];
+                    }
                         $cunits_content .= "\n        <td width='2%' style=\"border-bottom: 1px solid #CAC3B5;\">".
                                 "<a href='../../modules/units/info.php?edit=$cu[id]'>" .
                                 "<img src='../../template/classic/img/edit.gif' title='$langEdit' /></a></td>" .
-                                "\n        <td width='2%' style=\"border-bottom: 1px solid #CAC3B5;\"><a href='$_SERVER[PHP_SELF]?del=$cu[id]' " .
+                                "\n        <td width='2%' style=\"border-bottom: 1px solid #CAC3B5;\"><a href='$_SERVER[PHP_SELF]?del=$cu[id]&CSRFToken=$CSRFToken' " .
                                 "onClick=\"return confirmation();\">" .
                                 "<img src='../../template/classic/img/delete.gif' " .
                                 "title='$langDelete'></img></a></td>" .
