@@ -170,17 +170,25 @@ hContent;
 	--------------------------------------*/
 
     if (isset($delete) && $delete) {
-        $result = db_query("DELETE FROM annonces WHERE id='$delete'", $mysqlMainDb);
-        $message = "<p class='success_small'>$langAnnDel</p>";
+        if(isset($CSRFToken)) {
+            if ($_SESSION['token'] == $CSRFToken) {
+                $result = db_query("DELETE FROM annonces WHERE id='$delete'", $mysqlMainDb);
+                $message = "<p class='success_small'>$langAnnDel</p>";
+            }
+        }
     }
 
     /*----------------------------------------
 	DELETE ALL ANNOUNCEMENTS COMMAND
 	--------------------------------------*/
-
+    
     if (isset($deleteAllAnnouncement) && $deleteAllAnnouncement) {
-        db_query("DELETE FROM annonces WHERE cours_id = $cours_id", $mysqlMainDb);
-        $message = "<p class='success_small'>$langAnnEmpty</p>";
+        if(isset($CSRFToken)) {
+            if($_SESSION['token'] = $CSRFToken) {
+                db_query("DELETE FROM annonces WHERE cours_id = $cours_id", $mysqlMainDb);
+                $message = "<p class='success_small'>$langAnnEmpty</p>";
+            }
+        }
     }
 
     /*----------------------------------------
@@ -291,6 +299,10 @@ hContent;
     /*----------------------------------------
 	DISPLAY ACTIONS TOOL BAR
 	--------------------------------------*/
+    if(isset($_SESSION['token'])) {
+        $CSRFToken = $_SESSION['token'];
+    }
+
     $tool_content .= "
       <div id='operations_container'>
         <ul id='opslist'>
@@ -298,7 +310,7 @@ hContent;
 
     if ($announcementNumber > 1 || isset($_POST['submitAnnouncement'])) {
         $tool_content .= "
-          <li><a href='$_SERVER[PHP_SELF]?deleteAllAnnouncement=1' onClick='return confirmation('all');'>$langEmptyAnn</a></li>";
+          <li><a href='$_SERVER[PHP_SELF]?deleteAllAnnouncement=1?CSRFToken=$CSRFToken' onClick='return confirmation('all');'>$langEmptyAnn</a></li>";
     }
     $tool_content .= "
         </ul>
@@ -408,12 +420,13 @@ hContent;
                 $tool_content .= "".$myrow["title"]."";
             }
 
+            $my_row_id = $myrow['id'];
             $tool_content .= "</b>&nbsp;<small>(" . $myrow['temps'] . ")</small>
             <br />".$content."</td>
         <td width='70' class='right'>
         <a href='$_SERVER[PHP_SELF]?modify=" . $myrow['id'] . "'>
         <img src='../../template/classic/img/edit.gif' title='" . $langModify . "' /></a>
-        <a href='$_SERVER[PHP_SELF]?delete=" . $myrow['id'] . "' onClick=\"return confirmation('');\">
+        <a href='$_SERVER[PHP_SELF]?delete=$my_row_id&CSRFToken=$CSRFToken' onClick=\"return confirmation('');\">
         <img src='../../template/classic/img/delete.gif' title='" . $langDelete . "' /></a>
         </td>";
 
