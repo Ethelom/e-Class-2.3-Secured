@@ -161,7 +161,9 @@ if ($is_adminOfCourse) {
 			} elseif ($choice == "do_delete") {
 				$nameTools = $m['WorkDelete'];
 				$navigation[] = array("url"=>"work.php", "name"=> $langWorks);
-				delete_assignment($id);
+				if(isset($CSRFToken)) {
+                    delete_assignment($id, $CSRFToken);
+                }
 			} elseif ($choice == 'edit') {
 				$nameTools = $m['WorkEdit'];
 				$navigation[] = array("url"=>"work.php", "name"=> $langWorks);
@@ -541,20 +543,22 @@ function edit_assignment($id)
 
 
 //delete assignment
-function delete_assignment($id) {
+function delete_assignment($id, $CSRFToken) {
 
 	global $tool_content, $workPath, $currentCourseID, $webDir, $langBack, $langDeleted;
 
 	$secret = work_secret($id);
-	db_query("DELETE FROM assignments WHERE id='$id'");
-	db_query("DELETE FROM assignment_submit WHERE assignment_id='$id'");
-	@mkdir("$webDir/courses/garbage");
-	@mkdir("$webDir/courses/garbage/$currentCourseID",0777);
-	@mkdir("$webDir/courses/garbage/$currentCourseID/work",0777);
-	move_dir("$workPath/$secret",
-	"$webDir/courses/garbage/$currentCourseID/work/${id}_$secret");
+	if($CSRFToken == $_SESSION['token']) {
+        db_query("DELETE FROM assignments WHERE id='$id'");
+        db_query("DELETE FROM assignment_submit WHERE assignment_id='$id'");
+        @mkdir("$webDir/courses/garbage");
+        @mkdir("$webDir/courses/garbage/$currentCourseID", 0777);
+        @mkdir("$webDir/courses/garbage/$currentCourseID/work", 0777);
+        move_dir("$workPath/$secret",
+            "$webDir/courses/garbage/$currentCourseID/work/${id}_$secret");
 
-	$tool_content .="<p class=\"success_small\">$langDeleted<br /><a href=\"work.php\">".$langBack."</a></p>";
+        $tool_content .= "<p class=\"success_small\">$langDeleted<br /><a href=\"work.php\">" . $langBack . "</a></p>";
+    }
 }
 
 
@@ -654,10 +658,15 @@ function assignment_details($id, $row, $message = null)
 
 
 	if ($is_adminOfCourse) {
-	$tool_content .= "
+
+	    if(isset($_SESSION['token'])) {
+	        $CSRFToken = $_SESSION['token'];
+        }
+
+        $tool_content .= "
     <div id=\"operations_container\">
       <ul id=\"opslist\">
-        <li><a href=\"work.php?id=$id&amp;choice=do_delete\" onClick=\"return confirmation('".addslashes($row['title'])."');\">$langDelAssign</a></li>
+        <li><a href=\"work.php?id=$id&amp;choice=do_delete&amp;CSRFToken=$CSRFToken\" onClick=\"return confirmation('".addslashes($row['title'])."');\">$langDelAssign</a></li>
         <li><a href=\"work.php?download=$id\">$langZipDownload</a></li>
       </ul>
     </div>
@@ -1140,8 +1149,9 @@ cData;
       <td align='center'>".nice_format($row['deadline'])."</td>
       <td align='right'>
          <a href='work.php?id=$row[id]&amp;choice=edit'><img src='../../template/classic/img/edit.gif' alt='$m[edit]' /></a>";
+            $CSRFToken = $_SESSION['token'];
 			$tool_content .= "
-         <a href='work.php?id=$row[id]&amp;choice=do_delete' onClick='return confirmation(\"".addslashes($row_title)."\");'><img src='../../template/classic/img/delete.gif' alt='$m[delete]' /></a>";
+         <a href='work.php?id=$row[id]&amp;choice=do_delete&amp;CSRFToken=$CSRFToken' onClick='return confirmation(\"".addslashes($row_title)."\");'><img src='../../template/classic/img/delete.gif' alt='$m[delete]' /></a>";
 
 			if ($row['active']) {
 				$deactivate_temp = htmlspecialchars($m['deactivate']);
