@@ -181,7 +181,7 @@ hContent;
     /*----------------------------------------
 	DELETE ALL ANNOUNCEMENTS COMMAND
 	--------------------------------------*/
-    
+
     if (isset($deleteAllAnnouncement) && $deleteAllAnnouncement) {
         if(isset($CSRFToken)) {
             if($_SESSION['token'] = $CSRFToken) {
@@ -310,7 +310,7 @@ hContent;
 
     if ($announcementNumber > 1 || isset($_POST['submitAnnouncement'])) {
         $tool_content .= "
-          <li><a href='$_SERVER[PHP_SELF]?deleteAllAnnouncement=1?CSRFToken=$CSRFToken' onClick='return confirmation('all');'>$langEmptyAnn</a></li>";
+          <li><a href='$_SERVER[PHP_SELF]?deleteAllAnnouncement=1&CSRFToken=$CSRFToken' onClick='return confirmation('all');'>$langEmptyAnn</a></li>";
     }
     $tool_content .= "
         </ul>
