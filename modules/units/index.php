@@ -83,32 +83,40 @@ _editor_lang = '$lang_editor';
 				WHERE unit_id = $id AND id = $res_id");
 	}
 	$tool_content .= "<p class='success_small'>$langResourceUnitModified</p>";
-} elseif(isset($_REQUEST['del'])) { // delete resource from course unit
+} elseif(isset($_REQUEST['del']) and isset($CSRFToken)) { // delete resource from course unit
 	$res_id = intval($_GET['del']);
-	if ($id = check_admin_unit_resource($res_id)) {
-		db_query("DELETE FROM unit_resources WHERE id = '$res_id'", $mysqlMainDb);
-		$tool_content .= "<p class='success_small'>$langResourceCourseUnitDeleted</p>";
-	}
-} elseif (isset($_REQUEST['vis'])) { // modify visibility in text resources only 
+        if ($_SESSION['token'] == $CSRFToken) {
+            if ($id = check_admin_unit_resource($res_id)) {
+                db_query("DELETE FROM unit_resources WHERE id = '$res_id'", $mysqlMainDb);
+                $tool_content .= "<p class='success_small'>$langResourceCourseUnitDeleted</p>";
+            }
+        }
+} elseif (isset($_REQUEST['vis']) and isset($CSRFToken)) { // modify visibility in text resources only
 	$res_id = intval($_REQUEST['vis']);
-	if ($id = check_admin_unit_resource($res_id)) {
-		$sql = db_query("SELECT `visibility` FROM unit_resources WHERE id=$res_id");
-		list($vis) = mysql_fetch_row($sql);
-		$newvis = ($vis == 'v')? 'i': 'v';
-		db_query("UPDATE unit_resources SET visibility = '$newvis' WHERE id = $res_id");
-	}
-} elseif (isset($_REQUEST['down'])) { // change order down
+    if ($_SESSION['token'] == $CSRFToken) {
+        if ($id = check_admin_unit_resource($res_id)) {
+            $sql = db_query("SELECT `visibility` FROM unit_resources WHERE id=$res_id");
+            list($vis) = mysql_fetch_row($sql);
+            $newvis = ($vis == 'v') ? 'i' : 'v';
+            db_query("UPDATE unit_resources SET visibility = '$newvis' WHERE id = $res_id");
+        }
+    }
+} elseif (isset($_REQUEST['down']) and isset($CSRFToken)) { // change order down
 	$res_id = intval($_REQUEST['down']);
-	if ($id = check_admin_unit_resource($res_id)) {
-                move_order('unit_resources', 'id', $res_id, 'order', 'down',
-                           "unit_id=$id");
-	}
-} elseif (isset($_REQUEST['up'])) { // change order up
+    if ($_SESSION['token'] == $CSRFToken) {
+        if ($id = check_admin_unit_resource($res_id)) {
+            move_order('unit_resources', 'id', $res_id, 'order', 'down',
+                "unit_id=$id");
+        }
+    }
+} elseif (isset($_REQUEST['up']) and isset($CSRFToken)) { // change order up
 	$res_id = intval($_REQUEST['up']);
-	if ($id = check_admin_unit_resource($res_id)) {
-                move_order('unit_resources', 'id', $res_id, 'order', 'up',
-                           "unit_id=$id");
-	}
+    if ($_SESSION['token'] == $CSRFToken) {
+        if ($id = check_admin_unit_resource($res_id)) {
+            move_order('unit_resources', 'id', $res_id, 'order', 'up',
+                "unit_id=$id");
+        }
+    }
 }
 
 if ($is_adminOfCourse) {
@@ -323,7 +331,7 @@ function show_doc($title, $comments, $resource_id, $file_id)
                 $comment = "";
         }
         return "<tr$class_vis><td width=1>$link<img src='$image' /></a></td><td align=left>$link$title</a></td>" .
-                actions('doc', $resource_id, $status) .
+                actions('doc', $resource_id, $status, $CSRFToken) .
                 '</tr>' . $comment;
 }
 
@@ -336,7 +344,7 @@ function show_text($comments, $resource_id, $visibility)
         $class_vis = ($visibility == 'i')? ' class="invisible"': '';
 	$comments = mathfilter($comments, 12, "../../courses/mathimg/");
         $tool_content .= "<tr$class_vis><td colspan=2>$comments</td>" .
-		actions('text', $resource_id, $visibility) .
+		actions('text', $resource_id, $visibility, $CSRFToken) .
                 "</tr>";
 }
 
@@ -374,7 +382,7 @@ function show_lp($title, $comments, $resource_id, $lp_id)
         $class_vis = ($status == 'i' or $status == 'del')?
                 ' class="invisible"': '';
 	return "<tr$class_vis><td width='3%'>$link$imagelink</a></td><td width='82%'>$link$title</a></td>" .
-		actions('lp', $resource_id, $status) .
+		actions('lp', $resource_id, $status, $CSRFToken) .
 		'</tr>' . $comment_box;
 }
 
@@ -410,7 +418,7 @@ function show_video($table, $title, $comments, $resource_id, $video_id, $visibil
                 $comment_box = "";
         }
         $tool_content .= "<tr$class_vis><td width='3%'>$imagelink</td><td width='82%'>$videolink</td>" .
-		actions('video', $resource_id, $visibility) .
+		actions('video', $resource_id, $visibility, $CSRFToken) .
                 '</tr>' . $comment_box;
 }
 
@@ -447,7 +455,7 @@ function show_work($title, $comments, $resource_id, $work_id, $visibility)
 	}
 
 	return "<tr$class_vis><td width='3%'>$imagelink</td><td width='82%'>$exlink</td>" .
-		actions('lp', $resource_id, $visibility) .
+		actions('lp', $resource_id, $visibility, $CSRFToken) .
 		'</tr>' . $comment_box;
 }
 
@@ -484,7 +492,7 @@ function show_exercise($title, $comments, $resource_id, $exercise_id, $visibilit
 	}
 
 	return "<tr$class_vis><td width='3%'>$imagelink</td><td width='82%'>$exlink</td>" .
-		actions('lp', $resource_id, $visibility) .
+		actions('lp', $resource_id, $visibility, $CSRFToken) .
 		'</tr>' . $comment_box;
 }
 
@@ -513,7 +521,7 @@ function show_forum($type, $title, $comments, $resource_id, $ft_id, $visibility)
 	}
 
 	return "<tr$class_vis><td width='3%'>$imagelink</td><td width='82%'>$forumlink</td>" .
-		actions('forum', $resource_id, $visibility) .
+		actions('forum', $resource_id, $visibility, $CSRFToken) .
 		'</tr>' . $comment_box;
 }
 
@@ -550,59 +558,61 @@ function show_wiki($title, $comments, $resource_id, $wiki_id, $visibility)
 	}
 
 	return "<tr$class_vis><td width='3%'>$imagelink</td><td width='82%'>$wikilink</td>" .
-		actions('wiki', $resource_id, $visibility) .
+		actions('wiki', $resource_id, $visibility, $CSRFToken) .
 		'</tr>' . $comment_box;
 }
 
 // resource actions
-function actions($res_type, $resource_id, $status)
+function actions($res_type, $resource_id, $status, $CSRFToken)
 {
+    if ($CSRFToken == $_SESSION['token']) {
         global $is_adminOfCourse, $langEdit, $langDelete, $langVisibility, $langDown, $langUp, $mysqlMainDb;
 
         static $first = true;
 
-	if (!$is_adminOfCourse) {
-		return '';
-	}
+        if (!$is_adminOfCourse) {
+            return '';
+        }
 
-        $icon_vis = ($status == 'v')? 'visible.gif': 'invisible.gif';
+        $icon_vis = ($status == 'v') ? 'visible.gif' : 'invisible.gif';
 
         if ($status != 'del') {
-                $content = "<td width='3%'><a href='$_SERVER[PHP_SELF]?edit=$resource_id'>" .
+            $content = "<td width='3%'><a href='$_SERVER[PHP_SELF]?edit=$resource_id'>" .
                 "<img src='../../template/classic/img/edit.gif' title='$langEdit' /></a></td>";
         } else {
-                $content = '<td width="3%">&nbsp;</td>';
+            $content = '<td width="3%">&nbsp;</td>';
         }
         $content .= "<td width='3%'><a href='$_SERVER[PHP_SELF]?del=$resource_id'" .
-                                        " onClick=\"return confirmation();\">" .
-                                        "<img src='../../template/classic/img/delete.gif' " .
-                                        "title='$langDelete'></img></a></td>";
-	 
-	if ($status != 'del') {
-		if ($res_type == 'text' or $res_type == 'video' or $res_type == 'forum' or $res_type == 'topic') { 
-			$content .= "<td width='3%'><a href='$_SERVER[PHP_SELF]?vis=$resource_id'>" .
-                                        "<img src='../../template/classic/img/$icon_vis' " .
-                                        "title='$langVisibility'></img></a></td>";
-		} else {
-			$content .= "<td width='3%'>&nbsp;</td>";
-		}
+            " onClick=\"return confirmation();\">" .
+            "<img src='../../template/classic/img/delete.gif' " .
+            "title='$langDelete'></img></a></td>";
+
+        if ($status != 'del') {
+            if ($res_type == 'text' or $res_type == 'video' or $res_type == 'forum' or $res_type == 'topic') {
+                $content .= "<td width='3%'><a href='$_SERVER[PHP_SELF]?vis=$resource_id'>" .
+                    "<img src='../../template/classic/img/$icon_vis' " .
+                    "title='$langVisibility'></img></a></td>";
+            } else {
+                $content .= "<td width='3%'>&nbsp;</td>";
+            }
         } else {
-                $content .= '<td width="3%">&nbsp;</td>';
+            $content .= '<td width="3%">&nbsp;</td>';
         }
         if ($resource_id != $GLOBALS['max_resource_id']) {
-                $content .= "<td width='3%'><a href='$_SERVER[PHP_SELF]?down=$resource_id'>" .
-                        "<img src='../../template/classic/img/down.gif' title='$langDown'></img></a></td>";
-	} else {
-		$content .= "<td width='3%'>&nbsp;</td>";
-	}
-        if (!$first) {
-                $content .= "<td width='3%'><a href='$_SERVER[PHP_SELF]?up=$resource_id'>" .
-                        "<img src='../../template/classic/img/up.gif' title='$langUp'></img></a></td>";
+            $content .= "<td width='3%'><a href='$_SERVER[PHP_SELF]?down=$resource_id'>" .
+                "<img src='../../template/classic/img/down.gif' title='$langDown'></img></a></td>";
         } else {
-                $content .= "<td width='3%'>&nbsp;</td>";
+            $content .= "<td width='3%'>&nbsp;</td>";
+        }
+        if (!$first) {
+            $content .= "<td width='3%'><a href='$_SERVER[PHP_SELF]?up=$resource_id'>" .
+                "<img src='../../template/classic/img/up.gif' title='$langUp'></img></a></td>";
+        } else {
+            $content .= "<td width='3%'>&nbsp;</td>";
         }
         $first = false;
         return $content;
+    }
 }
 
 
