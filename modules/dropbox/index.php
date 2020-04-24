@@ -293,10 +293,11 @@ if (!isset($_GET['mailing']))  // RH: Mailing detail: no received files
 		$tool_content .= "<a href='dropbox_download.php?id=".urlencode($w->id)."' target=_blank>".$w->title."</a>";
 
 		$fSize = ceil(($w->filesize)/1024);
+		$receivedFileDescription = htmlspecialchars($w->description, ENT_QUOTES, 'UTF-8');
 		$tool_content .= <<<tCont9
         <small>&nbsp;&nbsp;&nbsp;($fSize kB)</small>
         <br />
-        <small>$w->description</small>
+        <small>$receivedFileDescription</small>
         </td>
 tCont9;
 		$tool_content .= "<td>$w->author</td><td>".$w->uploadDate;
@@ -435,6 +436,7 @@ $tool_content .= "
  * --------------------------------------
  */
 $i = 0;
+
 foreach ($dropbox_person -> sentWork as $w)
 {
 	$langSentTo = $dropbox_lang["sentTo"] . '&nbsp;';  // RH: Mailing: not for unsent
@@ -457,6 +459,7 @@ foreach ($dropbox_person -> sentWork as $w)
 	        } else {
 	           $tool_content .= "\n       <tr class=\"odd\">";
             	}
+	$sentFileDescription = htmlspecialchars($w->description, ENT_QUOTES, 'UTF-8');
 	$tool_content .= <<<tCont12
 
 		<td width="3"><img src="../../template/classic/img/outbox.gif" title="$w->title" /></td>
@@ -464,7 +467,7 @@ foreach ($dropbox_person -> sentWork as $w)
 		$w->title</a>
         <small>&nbsp;&nbsp;&nbsp;($fSize kB)</small>
         <br />
-        <small>$w->description</small></td>
+        <small>$sentFileDescription</small></td>
 
 tCont12;
 	$tool_content .="<td>";
