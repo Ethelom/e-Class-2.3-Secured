@@ -77,6 +77,7 @@ function prepare_message()
 }
 </script>';
 
+
 if ($is_adminOfCourse) {
     $tool_content .= "
       <div id=\"operations_container\">
