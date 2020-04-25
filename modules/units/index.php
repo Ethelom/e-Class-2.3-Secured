@@ -41,7 +41,7 @@ $action->record('MODULE_ID_UNITS');
 mysql_select_db($mysqlMainDb);
 
 if (isset($_REQUEST['id'])) {
-	$id = intval($_REQUEST['id']);
+    $id = intval($_REQUEST['id']);
 }
 $tool_content = $head_content = '';
 
@@ -54,64 +54,57 @@ function confirmation () {
 }
 </script>';
 
+if (isset($CSRFToken) and $CSRFToken = $_SESSION['token']) {
+    // Process resource actions
+    if (isset($_REQUEST['edit'])) {
+        $res_id = intval($_GET['edit']);
+        if ($id = check_admin_unit_resource($res_id)) {
+            if ($language == 'greek')
+                $lang_editor = 'el';
+            else
+                $lang_editor = 'en';
 
-// Process resource actions
-if (isset($_REQUEST['edit'])) {
-	$res_id = intval($_GET['edit']);
-	if ($id = check_admin_unit_resource($res_id)) {
-                if ($language == 'greek')
-                        $lang_editor = 'el';
-                else
-                        $lang_editor = 'en';
-
-                $head_content .= "<script type='text/javascript'>
+            $head_content .= "<script type='text/javascript'>
 _editor_url  = '$urlAppend/include/xinha/';
 _editor_lang = '$lang_editor';
 </script>
 <script type='text/javascript' src='$urlAppend/include/xinha/XinhaCore.js'></script>
 <script type='text/javascript' src='$urlAppend/include/xinha/my_config.js'></script>";
-		edit_res($res_id);
-	}
-}  elseif(isset($_REQUEST['edit_res_submit'])) { // edit resource
-	$res_id = intval($_REQUEST['resource_id']);	
-	if ($id = check_admin_unit_resource($res_id)) {
-		@$restitle = autoquote(trim($_REQUEST['restitle']));
-                $rescomments = autoquote(trim($_REQUEST['rescomments']));
-		$result = db_query("UPDATE unit_resources SET
+            edit_res($res_id);
+        }
+    }  elseif(isset($_REQUEST['edit_res_submit'])) { // edit resource
+        $res_id = intval($_REQUEST['resource_id']);
+        if ($id = check_admin_unit_resource($res_id)) {
+            @$restitle = autoquote(trim($_REQUEST['restitle']));
+            $rescomments = autoquote(trim($_REQUEST['rescomments']));
+            $result = db_query("UPDATE unit_resources SET
 				title = $restitle,
 				comments = $rescomments
 				WHERE unit_id = $id AND id = $res_id");
-	}
-	$tool_content .= "<p class='success_small'>$langResourceUnitModified</p>";
-} elseif(isset($_REQUEST['del']) and isset($CSRFToken)) { // delete resource from course unit
-	$res_id = intval($_GET['del']);
-        if ($_SESSION['token'] == $CSRFToken) {
-            if ($id = check_admin_unit_resource($res_id)) {
-                db_query("DELETE FROM unit_resources WHERE id = '$res_id'", $mysqlMainDb);
-                $tool_content .= "<p class='success_small'>$langResourceCourseUnitDeleted</p>";
-            }
         }
-} elseif (isset($_REQUEST['vis']) and isset($CSRFToken)) { // modify visibility in text resources only
-	$res_id = intval($_REQUEST['vis']);
-    if ($_SESSION['token'] == $CSRFToken) {
+        $tool_content .= "<p class='success_small'>$langResourceUnitModified</p>";
+    } elseif(isset($_REQUEST['del'])) { // delete resource from course unit
+        $res_id = intval($_GET['del']);
+        if ($id = check_admin_unit_resource($res_id)) {
+            db_query("DELETE FROM unit_resources WHERE id = '$res_id'", $mysqlMainDb);
+            $tool_content .= "<p class='success_small'>$langResourceCourseUnitDeleted</p>";
+        }
+    } elseif (isset($_REQUEST['vis'])) { // modify visibility in text resources only
+        $res_id = intval($_REQUEST['vis']);
         if ($id = check_admin_unit_resource($res_id)) {
             $sql = db_query("SELECT `visibility` FROM unit_resources WHERE id=$res_id");
             list($vis) = mysql_fetch_row($sql);
             $newvis = ($vis == 'v') ? 'i' : 'v';
             db_query("UPDATE unit_resources SET visibility = '$newvis' WHERE id = $res_id");
         }
-    }
-} elseif (isset($_REQUEST['down']) and isset($CSRFToken)) { // change order down
-	$res_id = intval($_REQUEST['down']);
-    if ($_SESSION['token'] == $CSRFToken) {
+    } elseif (isset($_REQUEST['down'])) { // change order down
+        $res_id = intval($_REQUEST['down']);
         if ($id = check_admin_unit_resource($res_id)) {
             move_order('unit_resources', 'id', $res_id, 'order', 'down',
                 "unit_id=$id");
         }
-    }
-} elseif (isset($_REQUEST['up']) and isset($CSRFToken)) { // change order up
-	$res_id = intval($_REQUEST['up']);
-    if ($_SESSION['token'] == $CSRFToken) {
+    } elseif (isset($_REQUEST['up'])) { // change order up
+        $res_id = intval($_REQUEST['up']);
         if ($id = check_admin_unit_resource($res_id)) {
             move_order('unit_resources', 'id', $res_id, 'order', 'up',
                 "unit_id=$id");
@@ -164,6 +157,10 @@ foreach (array('previous', 'next') as $i) {
         }
 }
 if ($is_adminOfCourse) {
+
+    if(isset($_SESSION['token'])) {
+        $CSRFToken = $_SESSION['token'];
+    }
         $tool_content .= "<div id='operations_container'><ul id='opslist'>" .
                         "<li>$langAdd: <a href='insert.php?type=doc&amp;id=$id'>$langInsertDoc</a></li>" .
                         "<li><a href='insert.php?type=exercise&amp;id=$id'>$langInsertExercise</a></li>" .
@@ -195,7 +192,7 @@ if (!empty($comments)) {
         }
 }
 
-show_resources($id);
+show_resources($id, $CSRFToken);
 
 $tool_content .= '<form class="unit-select" name="unitselect" action="' .
                  $urlServer . 'modules/units/" method="get">' .
@@ -240,7 +237,7 @@ function check_admin_unit_resource($resource_id)
 }
 
 // Display resources for unit with id=$id
-function show_resources($unit_id)
+function show_resources($unit_id, $CSRFToken)
 {
 	global $tool_content, $max_resource_id;
 	$req = db_query("SELECT * FROM unit_resources WHERE unit_id = $unit_id ORDER BY `order`");
@@ -249,14 +246,14 @@ function show_resources($unit_id)
                                 WHERE unit_id = $unit_id ORDER BY `order` DESC LIMIT 1"));
 		$tool_content .= "<br /><table class='resources' width='99%'>";
 		while ($info = mysql_fetch_array($req)) {
-			show_resource($info);
+			show_resource($info, $CSRFToken);
 		}	
 		$tool_content .= "</table>\n";
 	}
 }
 
 
-function show_resource($info)
+function show_resource($info, $CSRFToken)
 {
         global $tool_content, $langUnknownResType, $is_adminOfCourse;
 	
@@ -265,30 +262,30 @@ function show_resource($info)
         }
         switch ($info['type']) {
                 case 'doc':
-                        $tool_content .= show_doc($info['title'], $info['comments'], $info['id'], $info['res_id']);
+                        $tool_content .= show_doc($info['title'], $info['comments'], $info['id'], $info['res_id'], $CSRFToken);
                         break;
 		case 'text':
-                        $tool_content .= show_text($info['comments'], $info['id'], $info['visibility']);
+                        $tool_content .= show_text($info['comments'], $info['id'], $info['visibility'], $CSRFToken);
                         break;
 		case 'lp':
-                        $tool_content .= show_lp($info['title'], $info['comments'], $info['id'], $info['res_id']);
+                        $tool_content .= show_lp($info['title'], $info['comments'], $info['id'], $info['res_id'], $CSRFToken);
                         break;
 		case 'video':
 		case 'videolinks':
-                        $tool_content .= show_video($info['type'], $info['title'], $info['comments'], $info['id'], $info['res_id'], $info['visibility']);
+                        $tool_content .= show_video($info['type'], $info['title'], $info['comments'], $info['id'], $info['res_id'], $info['visibility'], $CSRFToken);
                         break;
 		case 'exercise':
-                        $tool_content .= show_exercise($info['title'], $info['comments'], $info['id'], $info['res_id'], $info['visibility']);
+                        $tool_content .= show_exercise($info['title'], $info['comments'], $info['id'], $info['res_id'], $info['visibility'], $CSRFToken);
                         break;
 		case 'work':
-                        $tool_content .= show_work($info['title'], $info['comments'], $info['id'], $info['res_id'], $info['visibility']);
+                        $tool_content .= show_work($info['title'], $info['comments'], $info['id'], $info['res_id'], $info['visibility'], $CSRFToken);
                         break;
 		case 'topic':
 		case 'forum':
-                        $tool_content .= show_forum($info['type'], $info['title'], $info['comments'], $info['id'], $info['res_id'], $info['visibility']);
+                        $tool_content .= show_forum($info['type'], $info['title'], $info['comments'], $info['id'], $info['res_id'], $info['visibility'], $CSRFToken);
                         break;
 		case 'wiki':
-                        $tool_content .= show_wiki($info['title'], $info['comments'], $info['id'], $info['res_id'], $info['visibility']);
+                        $tool_content .= show_wiki($info['title'], $info['comments'], $info['id'], $info['res_id'], $info['visibility'], $CSRFToken);
                         break;
                 default:
                         $tool_content .= $langUnknownResType;
@@ -297,7 +294,7 @@ function show_resource($info)
 
 
 // display resource documents
-function show_doc($title, $comments, $resource_id, $file_id)
+function show_doc($title, $comments, $resource_id, $file_id, $CSRFToken)
 {
         global $is_adminOfCourse, $currentCourseID, $langWasDeleted,
                $visibility_check, $urlServer, $id;
@@ -337,7 +334,7 @@ function show_doc($title, $comments, $resource_id, $file_id)
 
 
 // display resource text
-function show_text($comments, $resource_id, $visibility)
+function show_text($comments, $resource_id, $visibility, $CSRFToken)
 {
         global $is_adminOfCourse, $mysqlMainDb, $tool_content;
 
@@ -349,7 +346,7 @@ function show_text($comments, $resource_id, $visibility)
 }
 
 // display resource learning path
-function show_lp($title, $comments, $resource_id, $lp_id)
+function show_lp($title, $comments, $resource_id, $lp_id, $CSRFToken)
 {
 	global $id, $tool_content, $mysqlMainDb, $urlServer, $is_adminOfCourse,
                $langWasDeleted, $currentCourseID;
@@ -388,7 +385,7 @@ function show_lp($title, $comments, $resource_id, $lp_id)
 
 
 // display resource video
-function show_video($table, $title, $comments, $resource_id, $video_id, $visibility)
+function show_video($table, $title, $comments, $resource_id, $video_id, $visibility, $CSRFToken)
 {
         global $is_adminOfCourse, $currentCourseID, $tool_content;
 
@@ -424,7 +421,7 @@ function show_video($table, $title, $comments, $resource_id, $video_id, $visibil
 
 
 // display resource work (assignment)
-function show_work($title, $comments, $resource_id, $work_id, $visibility)
+function show_work($title, $comments, $resource_id, $work_id, $visibility, $CSRFToken)
 {
 	global $id, $tool_content, $mysqlMainDb, $urlServer, $is_adminOfCourse,
                $langWasDeleted, $currentCourseID;
@@ -461,7 +458,7 @@ function show_work($title, $comments, $resource_id, $work_id, $visibility)
 
 
 // display resource exercise
-function show_exercise($title, $comments, $resource_id, $exercise_id, $visibility)
+function show_exercise($title, $comments, $resource_id, $exercise_id, $visibility, $CSRFToken)
 {
 	global $id, $tool_content, $mysqlMainDb, $urlServer, $is_adminOfCourse,
                $langWasDeleted, $currentCourseID;
@@ -498,7 +495,7 @@ function show_exercise($title, $comments, $resource_id, $exercise_id, $visibilit
 
 
 // display resource forum
-function show_forum($type, $title, $comments, $resource_id, $ft_id, $visibility)
+function show_forum($type, $title, $comments, $resource_id, $ft_id, $visibility, $CSRFToken)
 {
 	global $id, $tool_content, $mysqlMainDb, $urlServer, $is_adminOfCourse, $currentCourseID;
 	$comment_box = '';
@@ -526,7 +523,7 @@ function show_forum($type, $title, $comments, $resource_id, $ft_id, $visibility)
 }
 
 // display resource wiki
-function show_wiki($title, $comments, $resource_id, $wiki_id, $visibility)
+function show_wiki($title, $comments, $resource_id, $wiki_id, $visibility, $CSRFToken)
 {
 	global $id, $tool_content, $mysqlMainDb, $urlServer, $is_adminOfCourse,
                $langWasDeleted, $currentCourseID;
