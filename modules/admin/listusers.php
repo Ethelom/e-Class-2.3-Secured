@@ -79,6 +79,14 @@ if($view == 2)	// coming from search_user.php(search with criteria)
 		$user_email = isset($_POST['user_email'])?$_POST['user_email']:'';
 		$user_registered_at_flag = isset($_POST['user_registered_at_flag'])?$_POST['user_registered_at_flag']:'';
 
+		$user_surname = mysql_real_escape_string($user_surname);
+		$user_firstname = mysql_real_escape_string($user_firstname);
+		$user_username = mysql_real_escape_string($user_username);
+		$user_am = mysql_real_escape_string($user_am);
+		$user_type = mysql_real_escape_string($user_type);
+		$user_email = mysql_real_escape_string($user_email);
+		$user_registered_at_flag = mysql_real_escape_string($user_registered_at_flag);
+
 	  	$date = explode("-",  $_POST['date']);
 		if (array_key_exists(1, $date)) {
     			$day=$date[0];
