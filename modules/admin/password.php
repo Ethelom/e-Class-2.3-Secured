@@ -54,8 +54,13 @@ if (!isset($urlSecure)) {
 }
 
 if (!isset($changePass)) {
+
+	if(isset($_SESSION['token'])) {
+		$CSRFToken = $_SESSION['token'];
+	}
+
 	$tool_content .= "
-<form method=\"post\" action=\"$passurl?submit=yes&changePass=do&userid=$userid\">
+<form method=\"post\" action=\"$passurl?submit=yes&changePass=do&userid=$userid&CSRFToken=$CSRFToken\">
   <table class=\"FormData\" width=\"99%\" align=\"left\">
   <tbody>
   <tr>
@@ -79,7 +84,7 @@ if (!isset($changePass)) {
 </form>";
 }
 
-elseif (isset($submit) && isset($changePass) && ($changePass == "do")) {
+elseif (isset($submit) && isset($changePass) && ($changePass == "do") && isset($CSRFToken) && $CSRFToken == $_SESSION['token']) {
 	$userid = $_REQUEST['userid'];
 	if (empty($_REQUEST['password_form']) || empty($_REQUEST['password_form1'])) {
 		$tool_content .= mes($langFields, "", 'caution');
