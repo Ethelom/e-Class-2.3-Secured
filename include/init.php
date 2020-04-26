@@ -113,16 +113,18 @@ if (mysql_version()) mysql_query("SET NAMES utf8");
 mysql_select_db($mysqlMainDb, $db);
 
 // include_messages
-include("${webDir}modules/lang/$language/common.inc.php");
-$extra_messages = "${webDir}/config/$language.inc.php";
-if (file_exists($extra_messages)) {
+if(languageIsValid($language)) {
+    include("${webDir}modules/lang/$language/common.inc.php");
+    $extra_messages = "${webDir}/config/$language.inc.php";
+    if (file_exists($extra_messages)) {
         include $extra_messages;
-} else {
+    } else {
         $extra_messages = false;
-}
-include("${webDir}modules/lang/$language/messages.inc.php");
-if ($extra_messages) {
+    }
+    include("${webDir}modules/lang/$language/messages.inc.php");
+    if ($extra_messages) {
         include $extra_messages;
+    }
 }
 
 // Make sure that the $uid variable isn't faked
@@ -346,4 +348,8 @@ if(isset($currentCourse) && file_exists($module_ini_dir = getcwd() . "/module.in
 		$toolContent_ErrorExists = $langCheckPublicTools;
 		$errorMessagePath = "../../";
 	}
+}
+
+function languageIsValid($language) {
+    return $language == "greek" || $language == "english" || $language == "spanish";
 }
