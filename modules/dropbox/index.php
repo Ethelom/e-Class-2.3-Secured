@@ -300,7 +300,8 @@ if (!isset($_GET['mailing']))  // RH: Mailing detail: no received files
         <small>$receivedFileDescription</small>
         </td>
 tCont9;
-		$tool_content .= "<td>$w->author</td><td>".$w->uploadDate;
+		$author = htmlspecialchars($w->author, ENT_QUOTES, 'UTF-8');
+		$tool_content .= "<td>$author</td><td>".$w->uploadDate;
 
 		if ($w->uploadDate != $w->lastUploadDate)
 		{
