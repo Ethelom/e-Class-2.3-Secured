@@ -232,6 +232,8 @@ if (mysql_num_rows($result) > 0) { // topics found
 			}
 			$pagination .= "&nbsp;</span></strong>";
 		}
+		$topic_title = htmlspecialchars($topic_title, ENT_QUOTES, 'UTF-8');
+		$pagination = htmlspecialchars($pagination, ENT_QUOTES, 'UTF-8');
 		$tool_content .= "<td><a href='$topiclink'>$topic_title</a>$pagination</td>\n";
 		$tool_content .= "<td class='Forum_leftside'>$replys</td>\n";
 		$tool_content .= "<td class='Forum_leftside1'>$myrow[prenom] $myrow[nom]</td>\n";

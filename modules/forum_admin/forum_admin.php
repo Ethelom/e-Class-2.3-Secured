@@ -87,6 +87,7 @@ if(isset($forumgo)) {
 	$result = db_query("SELECT forum_id, forum_name, forum_desc, forum_access, forum_moderator, forum_type 
 			FROM forums where cat_id='$cat_id'", $currentCourseID);
 	if ($result and mysql_num_rows($result) > 0) {
+		$ctg = htmlspecialchars($ctg, ENT_QUOTES, 'UTF-8');
 		$tool_content .= "<form action=\"$_SERVER[PHP_SELF]?forumgoadd=yes&ctg=$ctg&cat_id=$cat_id\" method=post>
 		<table width=99% class=\"ForumAdmSum\">
 		<tbody>
@@ -103,11 +104,14 @@ if(isset($forumgo)) {
 		$i=1;
 		while(list($forum_id, $forum_name, $forum_desc, $forum_access,
 			$forum_moderator, $forum_type) = mysql_fetch_row($result)) {
+
 				if ($i%2==1) {
 					$tool_content .= "\n<tr>";
 				} else {
 					$tool_content .= "\n<tr class=\"odd\">";
 				}
+				$forum_name = htmlspecialchars($forum_name, ENT_QUOTES, 'UTF-8');
+				$forum_desc = htmlspecialchars($forum_desc, ENT_QUOTES, 'UTF-8');
 				$tool_content .= "<td align='right'>$i.</td>
 				<td align='left'>$forum_name</td>
 				<td align='left'>$forum_desc&nbsp;</td>";
@@ -337,6 +341,7 @@ if(isset($forumgo)) {
 				$link_notify = toggle_link($forum_cat_action_notify);
 				$icon = toggle_icon($forum_cat_action_notify);
 			}
+			$cat_title = htmlspecialchars($cat_title, ENT_QUOTES, 'UTF-8');
 			$tool_content .= "\n<tr class=\"odd\">\n<td><div align='right'>$i.</div></td>
       			<td><div align='left'>$cat_title &nbsp;</div></td>
       			<td><div align='center'>$numbers[total]</div></td>
