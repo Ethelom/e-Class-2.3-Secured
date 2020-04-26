@@ -38,7 +38,7 @@ $nameTools = $langChangeUser;
 $navigation[] = array("url" => "index.php", "name" => $langAdmin);
 $tool_content = '';
 
-if (isset($_POST['username'])) {
+if (isset($_POST['username']) and isset($_SESSION['token']) and $CSRFToken == $_SESSION['token']) {
 	$result = db_query("SELECT user_id, nom, username, password, prenom, statut, email, iduser is_admin, perso, lang
                 FROM user LEFT JOIN admin
                 ON user.user_id = admin.iduser
