@@ -719,6 +719,7 @@ if (mysql_num_rows($sql) == 0) {
                                 continue;
                         }
                         $cmdDirName = $entry['path'];
+                        $cmdDirName = htmlspecialchars($cmdDirName, ENT_QUOTES, 'UTF-8')
                         if ($entry['visible']) {
                                 $style = '';
                         } else {
