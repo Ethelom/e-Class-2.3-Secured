@@ -288,14 +288,16 @@ if(isset($forumgo)) {
 
 	// forum delete category
 	elseif(isset($forumcatdel)) {
-		$result = db_query("SELECT forum_id FROM forums WHERE cat_id='$cat_id'", $currentCourseID);
-		while(list($forum_id) = mysql_fetch_row($result)) {
-			db_query("DELETE from topics where forum_id=$forum_id", $currentCourseID);
+		if(isset($CSRFToken) and $CSRFToken == $_SESSION['token']) {
+			$result = db_query("SELECT forum_id FROM forums WHERE cat_id='$cat_id'", $currentCourseID);
+			while(list($forum_id) = mysql_fetch_row($result)) {
+				db_query("DELETE from topics where forum_id=$forum_id", $currentCourseID);
+			}
+			db_query("DELETE FROM forums where cat_id=$cat_id", $currentCourseID);
+			db_query("DELETE FROM catagories where cat_id=$cat_id", $currentCourseID);
+			$tool_content .= "\n<p class=\"success_small\">$langCatForumDelete<br />
+			<a href=\"$_SERVER[PHP_SELF]?forumadmin=yes\">$langBack</a></p>";
 		}
-		db_query("DELETE FROM forums where cat_id=$cat_id", $currentCourseID);
-		db_query("DELETE FROM catagories where cat_id=$cat_id", $currentCourseID);
-		$tool_content .= "\n<p class=\"success_small\">$langCatForumDelete<br />
-		<a href=\"$_SERVER[PHP_SELF]?forumadmin=yes\">$langBack</a></p>";
 	}
 
 	// forum delete
@@ -341,6 +343,11 @@ if(isset($forumgo)) {
 				$link_notify = toggle_link($forum_cat_action_notify);
 				$icon = toggle_icon($forum_cat_action_notify);
 			}
+
+			if(isset($_SESSION['token'])) {
+				$CSRFToken = $_SESSION['token'];
+			}
+
 			$cat_title = htmlspecialchars($cat_title, ENT_QUOTES, 'UTF-8');
 			$tool_content .= "\n<tr class=\"odd\">\n<td><div align='right'>$i.</div></td>
       			<td><div align='left'>$cat_title &nbsp;</div></td>
@@ -349,7 +356,7 @@ if(isset($forumgo)) {
 			<img src='../../template/classic/img/forum_on.gif' border='0' title='$langForums'></img></a>&nbsp;
 			<a href='$_SERVER[PHP_SELF]?forumcatedit=yes&cat_id=$cat_id'>
 			<img src='../../template/classic/img/edit.gif' border='0' title='$langModify'></img></a>&nbsp;
-			<a href='$_SERVER[PHP_SELF]?forumcatdel=yes&cat_id=$cat_id&ok=0' onClick='return confirmation();'>
+			<a href='$_SERVER[PHP_SELF]?forumcatdel=yes&cat_id=$cat_id&ok=0&CSRFToken=$CSRFToken' onClick='return confirmation();'>
 			<img src='../../template/classic/img/delete.gif' border='0' title='$langDelete'></img></a>
 			<a href='$_SERVER[PHP_SELF]?forumcatnotify=$link_notify&cat_id=$cat_id'>	
 			<img src='../../template/classic/img/announcements$icon.gif' border='0' title='$langNotify'></img></a>
