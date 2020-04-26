@@ -203,7 +203,8 @@ hContent;
 
         if ($myrow) {
             $AnnouncementToModify = $myrow['id'];
-	    $contentToModify = unescapeSimple($myrow['contenu']);
+	        $contentToModify = unescapeSimple($myrow['contenu']);
+	        $contentToModify = htmlspecialchars($contentToModify, ENT_QUOTES, 'UTF-8');
             $titleToModify = q($myrow['title']);
             $displayAnnouncementList = true;
         }
