@@ -115,10 +115,15 @@ if(isset($forumgo)) {
 				$tool_content .= "<td align='right'>$i.</td>
 				<td align='left'>$forum_name</td>
 				<td align='left'>$forum_desc&nbsp;</td>";
+
+				if(isset($_SESSION['token'])) {
+					$CSRFToken = $_SESSION['token'];
+				}
+
 				$tool_content .= "\n<td align='center'>
 				<a href='$_SERVER[PHP_SELF]?forumgoedit=yes&forum_id=$forum_id&ctg=$ctg&cat_id=$cat_id'>
 				<img src='../../template/classic/img/edit.gif' title='$langModify' border='0'></img></a>&nbsp;
-				<a href='$_SERVER[PHP_SELF]?forumgodel=yes&forum_id=$forum_id&cat_id=$cat_id&ctg=$ctg&ok=0' onClick='return confirmation();'>
+				<a href='$_SERVER[PHP_SELF]?forumgodel=yes&forum_id=$forum_id&cat_id=$cat_id&ctg=$ctg&ok=0&CSRFToken=$CSRFToken' onClick='return confirmation();'>
 				<img src='../../template/classic/img/delete.gif' title='$langDelete' border='0'></img></a></td>
 				</tr>";
 				$i++;
@@ -302,13 +307,15 @@ if(isset($forumgo)) {
 
 	// forum delete
 	elseif(isset($forumgodel)) {
-		$nameTools = $langDelete;
-		$navigation[]= array ("url"=>"../forum_admin/forum_admin.php", "name"=> $langOrganisation);
-		db_query("DELETE FROM topics WHERE forum_id=$forum_id", $currentCourseID);
-		db_query("DELETE FROM forums WHERE forum_id=$forum_id", $currentCourseID);
-		db_query("UPDATE student_group SET forumId=0 WHERE forumId=$forum_id", $currentCourseID);
-		$tool_content .= "\n<p class=\"success_small\">$langForumDelete<br />
+		if(isset($CSRFToken) and $CSRFToken == $_SESSION['token']) {
+			$nameTools = $langDelete;
+			$navigation[]= array ("url"=>"../forum_admin/forum_admin.php", "name"=> $langOrganisation);
+			db_query("DELETE FROM topics WHERE forum_id=$forum_id", $currentCourseID);
+			db_query("DELETE FROM forums WHERE forum_id=$forum_id", $currentCourseID);
+			db_query("UPDATE student_group SET forumId=0 WHERE forumId=$forum_id", $currentCourseID);
+			$tool_content .= "\n<p class=\"success_small\">$langForumDelete<br />
 			<a href=\"$_SERVER[PHP_SELF]?forumgo=yes&ctg=$ctg&cat_id=$cat_id\">$langBack</a></p>";
+		}
 	} else {
 		if(isset($forumcatnotify)) { // modify forum category notification
 			$rows = mysql_num_rows(db_query("SELECT * FROM forum_notify 
