@@ -746,6 +746,7 @@ if (mysql_num_rows($sql) == 0) {
                         }
                         $tool_content .= "\n  <tr$style>";
                         $tool_content .= "\n    <td width='1%' valign='top' style='padding-top: 7px;'><a href='$file_url'$style$link_extra><img src='$image' border='0' /></a></td>";
+                        $link_text = htmlspecialchars($link_text, ENT_QUOTES, 'UTF-8');
                         $tool_content .= "\n    <td><div align='left'><a href='$file_url'$style$link_extra>$link_text</a>";
 
                         /*** comments ***/
