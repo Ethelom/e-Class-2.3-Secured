@@ -417,7 +417,7 @@ hContent;
             if ($myrow["title"]=="") {
                 $tool_content .= "".$langAnnouncementNoTille."";
             } else {
-                $tool_content .= "".$myrow["title"]."";
+                $tool_content .= "".htmlspecialchars($myrow["title"], ENT_QUOTES, 'UTF-8')."";
             }
 
             $my_row_id = $myrow['id'];
@@ -486,9 +486,10 @@ else {
 			} else {
 				$tool_content .= "\n      <tr class='odd'>";
 			}
+			$announcementTitle = htmlspecialchars($myrow[title], ENT_QUOTES, 'UTF-8');
 			$tool_content .= "
 			<td width='1'><img style='padding-top:3px;' src='${urlServer}/template/classic/img/arrow_grey.gif' title='bullet' /></td>
-			<td><b>$myrow[title]</b>&nbsp;<small>(" . nice_format($myrow["temps"]) . ")</small><br/>".unescapeSimple($content)."</td></tr>";
+			<td><b>$announcementTitle</b>&nbsp;<small>(" . nice_format($myrow["temps"]) . ")</small><br/>".unescapeSimple($content)."</td></tr>";
 			$k++;
 		} // while loop
 		$tool_content .= "
